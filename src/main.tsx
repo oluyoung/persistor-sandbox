@@ -19,8 +19,6 @@ async function bootstrap() {
     }
   });
 
-  console.log("App is bootstrapped with preloaded state:", preloadedState);
-
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <Provider store={store}>

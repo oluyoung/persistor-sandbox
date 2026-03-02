@@ -4,13 +4,14 @@ import userReducer from "./user.slice";
 import cacheReducer from "./cache.slice";
 import { persistLite } from '../persistor/src';
 import { compressionPlugin } from "../persistor/src/plugins/compress";
-// import { devLoggerPlugin } from "../persistor/src/plugins/devLogger";
+import { devLoggerPlugin } from "../persistor/src/plugins/devLogger";
 // import { slicePersistencePlugin } from "../persistor/src/plugins/perSlice"; // Needs work
 
 export const persister = persistLite({
   key: 'spa-root',
   debounceMs: 300,
-  plugins: [compressionPlugin()],
+  plugins: [devLoggerPlugin(), compressionPlugin()],
+  whitelist: [{ key: 'user', whitelistKeys: ['me', 'count']}], // Only persist the user slice
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -7,15 +7,12 @@ import { fetchUser, updateCount } from './lib/store/user.slice';
 import { setCache } from './lib/store/cache.slice';
 
 function App() {
-  // const [count, setCount] = useState(0);
-  const dis = useAppDispatch();
+  const dispatch = useAppDispatch();
   const count = useAppSelector((state) => state.user.count);
 
   useEffect(() => {
-    dis(fetchUser('id'));
+    dispatch(fetchUser('id'));
   }, []);
-
-  console.log({ count })
 
   return (
     <>
@@ -29,13 +26,13 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => dis(updateCount())}>
+        <button onClick={() => dispatch(updateCount())}>
           count is {count}
         </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
-        <button onClick={() => dis(setCache([{ id: Math.random().toString(), value: 'Cached Data' }]))}>
+        <button onClick={() => dispatch(setCache([{ id: Math.random().toString(), value: 'Cached Data' }]))}>
           CACHE DATA
         </button>
       </div>

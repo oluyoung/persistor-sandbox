@@ -10,6 +10,7 @@ export function compressionPlugin(): Plugin {
     },
     onLoad(raw) {
       try {
+        if (!raw) return null;
         const inflated = pako.inflate(raw, { to: 'string' });
         return JSON.parse(inflated);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
