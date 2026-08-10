@@ -8,7 +8,7 @@ export function createPersistor(options: PersistOptions): Persistor {
 
   const ownsStorage = plugins.some(p => p.ownsStorage);
   let lastQueuedState: any = null;
-  let debounceTimer: any = null;
+  let debounceTimer: number | null = null;
   let inFlight = false;
   const whitelistMap = normalizeFilters(
     whitelist as SliceFilterInput[]
