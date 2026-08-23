@@ -17,7 +17,7 @@ export function PersistGate<TState extends Record<string, unknown>>({ persistor,
 
   return (
     <PersistorContext.Provider value={persistor as Persistor<Record<string, unknown>>}>
-      {status !== 'loading' ? children : loading}
+      {status === 'loaded' || status === 'error' ? children : loading}
     </PersistorContext.Provider>
   );
 }

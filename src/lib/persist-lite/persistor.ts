@@ -9,13 +9,13 @@ import { filterRootState, normalizeFilters } from './utils';
 import { createStorageEngine } from './storage';
 
 export class PersistLite<TState extends Record<string, unknown>> {
-  key;
-  storage;
-  whitelist: SliceFilterInput[];
-  blacklist: SliceFilterInput[];
-  plugins: Plugin<TState>[];
-  debounceMs: number;
-  mergeStrategy: "replace" | "shallow";
+  private readonly key;
+  private readonly storage;
+  private readonly whitelist: SliceFilterInput[];
+  private readonly blacklist: SliceFilterInput[];
+  private readonly plugins: Plugin<TState>[];
+  private readonly debounceMs: number;
+  private readonly mergeStrategy: "replace" | "shallow";
 
   private _inFlight = false;
   private _lastQueuedState: TState | null = null;
@@ -42,7 +42,6 @@ export class PersistLite<TState extends Record<string, unknown>> {
       const raw = await this.storage.getItem(this.key);
       if (raw) state = JSON.parse(raw);
       const loaded = await applyPluginsLoad<TState>(state, this.plugins);
-      this._setStatus("loaded");
       return loaded as TState | null;
     } catch (error) {
       console.error("Failed to load persisted state:", error);
@@ -88,11 +87,15 @@ export class PersistLite<TState extends Record<string, unknown>> {
     };
   };
 
+  setLoaded = () => {
+    this._setStatus("loaded");
+  }
+
   get status() {
     return this._status;
   }
 
-  private flush = async () => {
+  flush = async () => {
     if (!this._lastQueuedState || this._inFlight) return;
     this._inFlight = true;
 
@@ -110,13 +113,13 @@ export class PersistLite<TState extends Record<string, unknown>> {
     } catch (error) {
       console.error("Failed to persist state:", error);
     } finally {
-      if (this._lastQueuedState) await this.flush();
       this._inFlight = false;
+      if (this._lastQueuedState) await this.flush();
     }
   }
 
-  private _setStatus = (next: PersistorStatus) => {
-    this._status = next;
+  private _setStatus = (status: PersistorStatus) => {
+    this._status = status;
     this._listeners.forEach((l) => l());
   };
 }

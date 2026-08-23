@@ -15,6 +15,7 @@ export function createPersistorEnhancer<TState extends Record<string, unknown>>(
       // Kick off rehydration — PersistGate gates loading until this resolves
       persistor.load().then((savedState) => {
         if (savedState) (store.dispatch as Dispatch)(rehydrate(savedState));
+        persistor.setLoaded();
       });
 
       return store;

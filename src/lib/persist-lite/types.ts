@@ -28,15 +28,8 @@ export interface Persistor<TState extends Record<string, unknown>> {
   subscribe: (listener: () => void) => () => void;
   purge: (slices?: string[]) => Promise<void>;
   status: PersistorStatus;
-}
-
-export interface PersistedSlice<TSlice> {
-  data: TSlice | string;
-  meta: {
-    version: number;
-    updatedAt: number;
-    compressed?: boolean;
-  };
+  setLoaded: () => void;
+  flush: () => Promise<void>;
 }
 
 export interface SliceFilter {
@@ -46,12 +39,3 @@ export interface SliceFilter {
 }
 
 export type SliceFilterInput = string | SliceFilter;
-
-export interface Options {
-  priority?: string[];
-  deferred?: string[];
-  prefix?: string;
-  compress?: boolean;
-  whitelist?: SliceFilterInput[];
-  blacklist?: SliceFilterInput[];
-}
