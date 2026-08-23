@@ -3,26 +3,20 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.tsx";
 import { Provider } from "react-redux";
-import { persister, createAppStore } from "./lib/store";
+// import { persister, createAppStore } from "./lib/store";
+import { persistor, createAppStore } from "./store-lite";
+import { PersistGate } from "./lib/persist-lite/react/PersistGate.tsx";
 
 async function bootstrap() {
-  const preloadedState = await persister.load();
-  const store = createAppStore(preloadedState ?? undefined);
-
-  let lastState = store.getState();
-
-  store.subscribe(() => {
-    const state = store.getState();
-    if (state !== lastState) {
-      lastState = state;
-      persister.save(state);
-    }
-  });
+  console.log({ persistor})
+  const store = createAppStore();
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
       <Provider store={store}>
-        <App />
+        <PersistGate persistor={persistor} loading={<div>Redux Persist Loading...</div>}>
+          <App />
+        </PersistGate>
       </Provider>
     </StrictMode>,
   );

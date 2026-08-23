@@ -40,16 +40,16 @@ function filterSlice(
   return next;
 }
 
-export function filterRootState<TState>(
-  state: TState,
+export function filterRootState<TState extends Record<string, unknown>>(
+  state = {} as TState,
   whitelist?: Map<string, SliceFilter>,
   blacklist?: Map<string, SliceFilter>
-) {
+): TState {
   if (!whitelist?.size && !blacklist?.size) {
     return state;
   }
 
-  const next = {} as TState;
+  const next = {} as Record<string, unknown>;
 
   for (const sliceKey of Object.keys(state)) {
     const whitelisted = whitelist?.has(sliceKey);
@@ -68,5 +68,5 @@ export function filterRootState<TState>(
     );
   }
 
-  return next;
+  return next as TState;
 }
