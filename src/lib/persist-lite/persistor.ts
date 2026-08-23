@@ -6,7 +6,7 @@ import type {
 import { applyPluginsLoad, applyPluginsSave } from './plugins/apply';
 import type { Plugin } from './types';
 import { filterRootState, normalizeFilters } from './utils';
-import { createLocalStorage } from './storage/local';
+import { createStorageEngine } from './storage';
 
 export class PersistLite<TState extends Record<string, unknown>> {
   key;
@@ -27,7 +27,7 @@ export class PersistLite<TState extends Record<string, unknown>> {
     if (!options.key)
       throw new Error("Persist Lite cannot be iniated without a key!");
     this.key = options.key;
-    this.storage = options.storage || createLocalStorage();
+    this.storage = options.storage || createStorageEngine();
     this.whitelist = options.whitelist || [];
     this.blacklist = options.blacklist || [];
     this.plugins = options.plugins || [];
