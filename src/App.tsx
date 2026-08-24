@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { useAppDispatch, useAppSelector } from './lib/store/hooks';
-import { fetchUser, updateCount } from './lib/store/user.slice';
-import { setCache } from './lib/store/cache.slice';
+import { useAppDispatch, useAppSelector } from './store-lite/hooks';
+import { fetchUser, updateCount } from './store-lite/user.slice';
+import { setCache } from './store-lite/cache.slice';
 import { usePersistor } from './lib/persist-lite/react';
 
 function App() {
