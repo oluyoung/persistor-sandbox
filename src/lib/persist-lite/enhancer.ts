@@ -1,9 +1,9 @@
 import type { Dispatch, StoreEnhancer } from 'redux';
-import type { Persistor } from './types';
+import { PersistLite } from './persistor';
 import { rehydrate } from './actions';
 
 export function createPersistorEnhancer<TState extends Record<string, unknown>>(
-  persistor: Persistor<TState>,
+  persistor: PersistLite<TState>,
 ): StoreEnhancer {
   return (createStore) =>
     (...args) => {

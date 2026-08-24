@@ -15,9 +15,9 @@ export class PersistLite<TState extends Record<string, unknown>> {
   private readonly blacklist: SliceFilterInput[];
   private readonly plugins: Plugin<TState>[];
   private readonly debounceMs: number;
-  private readonly mergeStrategy: "replace" | "shallow";
 
   private _inFlight = false;
+  private _isPurging = false;
   private _lastQueuedState: TState | null = null;
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private _status: "idle" | "loading" | "loaded" | "error" = "idle";
@@ -32,7 +32,6 @@ export class PersistLite<TState extends Record<string, unknown>> {
     this.blacklist = options.blacklist || [];
     this.plugins = options.plugins || [];
     this.debounceMs = options.debounceMs || 300;
-    this.mergeStrategy = options.mergeStrategy || "replace";
   }
 
   load = async () => {
@@ -61,23 +60,28 @@ export class PersistLite<TState extends Record<string, unknown>> {
   }
 
   purge = async (slices?: string[]) => {
+    this._isPurging = true;
+
     if (this._debounceTimer) {
       clearTimeout(this._debounceTimer);
       this._debounceTimer = null;
     }
-
-    if (!slices) {
-      await this.storage?.removeItem(this.key);
-      return;
+    
+    try {
+      if (!slices) {
+        await this.storage?.removeItem(this.key);
+      } else {
+        const raw = await this.storage?.getItem(this.key);
+        if (!raw) return;
+    
+        const state = JSON.parse(raw) as Record<string, unknown>;
+        slices.forEach((s) => delete state[s]);
+        await this.storage?.setItem(this.key, JSON.stringify(state));
+      }
+    } finally {
+      this._lastQueuedState = null;
+      this._isPurging = false;
     }
-
-    // partial purge: load, delete keys, re-save
-    const raw = await this.storage?.getItem(this.key);
-    if (!raw) return;
-
-    const state = JSON.parse(raw) as Record<string, unknown>;
-    slices.forEach((s) => delete state[s]);
-    await this.storage?.setItem(this.key, JSON.stringify(state));
   }
 
   subscribe = (listener: () => void) => {
@@ -96,7 +100,7 @@ export class PersistLite<TState extends Record<string, unknown>> {
   }
 
   flush = async () => {
-    if (!this._lastQueuedState || this._inFlight) return;
+    if (!this._lastQueuedState || this._inFlight || this._isPurging) return;
     this._inFlight = true;
 
     const stateToPersist = this._lastQueuedState;

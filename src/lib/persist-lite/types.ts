@@ -19,7 +19,6 @@ export interface PersistOptions<TState extends Record<string, unknown>> {
   blacklist?: (string | SliceFilter)[];
   plugins?: Plugin<TState>[];
   debounceMs?: number;
-  mergeStrategy?: 'replace' | 'shallow';
 }
 
 export interface Persistor<TState extends Record<string, unknown>> {
@@ -28,7 +27,6 @@ export interface Persistor<TState extends Record<string, unknown>> {
   subscribe: (listener: () => void) => () => void;
   purge: (slices?: string[]) => Promise<void>;
   status: PersistorStatus;
-  setLoaded: () => void;
   flush: () => Promise<void>;
 }
 
