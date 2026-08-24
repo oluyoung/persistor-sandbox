@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useSyncExternalStore } from 'react';
 import { PersistorContext } from './context';
 
 export function usePersistor() {
@@ -6,5 +6,15 @@ export function usePersistor() {
   if (!persistor) {
     throw new Error('usePersistor must be called inside a <PersistGate>');
   }
-  return persistor;
+
+  const status = useSyncExternalStore(
+    persistor.subscribe,
+    () => persistor.status,
+    () => 'loading' as const, // SSR snapshot
+  );
+  return {
+    persistor,
+    status,
+    isHydrated: status === 'loaded',
+  };;
 }

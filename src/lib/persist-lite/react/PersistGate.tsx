@@ -15,9 +15,13 @@ export function PersistGate<TState extends Record<string, unknown>>({ persistor,
     () => 'loading' as const,
   );
 
+  const isReady = status === 'loaded' || status === 'error';
+
   return (
     <PersistorContext.Provider value={persistor as Persistor<Record<string, unknown>>}>
-      {status === 'loaded' || status === 'error' ? children : loading}
+      {/* No loading prop = non-blocking. Children render immediately,
+          components use usePersistor to handle their own stale state. */}
+      {loading !== undefined && !isReady ? loading : children}
     </PersistorContext.Provider>
   );
 }
