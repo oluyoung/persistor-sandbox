@@ -7,3 +7,8 @@ export const rehydrate = createAction<Record<string, unknown>>(
 export const persistPurge = createAction<string[] | undefined>(
   '@@PERSIST/PURGE',
 );
+
+export const REHYDRATE = rehydrate.type;
+export const PERSIST_PURGE = persistPurge.type;
+export const PERSIST_BASE = '@@PERSIST/BASE';
+export const PERSIST_RESET = '@@PERSIST/RESET';

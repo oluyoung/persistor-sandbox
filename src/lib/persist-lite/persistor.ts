@@ -102,7 +102,11 @@ export class PersistLite<TState extends Record<string, unknown>> {
         const envelope = JSON.parse(raw) as StorageEnvelope<Record<string, unknown>>;
         const state = { ...envelope._d };
         slices.forEach((s) => delete state[s]);
-        await this.storage?.setItem(this.key, JSON.stringify(state));
+
+        await this.storage?.setItem(this.key, JSON.stringify({
+          ...envelope,
+           _d: state,
+        }));
       }
     } finally {
       this._lastQueuedState = null;

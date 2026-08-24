@@ -1,56 +1,10 @@
-import { useEffect } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import { useAppDispatch, useAppSelector } from './store-lite/hooks';
-import { fetchUser, updateCount } from './store-lite/user.slice';
-import { setCache } from './store-lite/cache.slice';
-import { usePersistor } from './lib/persist-lite/react';
+import React from 'react'
+import Classic from './Classic';
+import RTK from './RTK';
 
-function App() {
-  const dispatch = useAppDispatch();
-  const count = useAppSelector((state) => state.user.count);
-  
-  const { persistor, isHydrated, status } = usePersistor();
-
-  console.log({ isHydrated, status });
-
-  useEffect(() => {
-    dispatch(fetchUser('id'));
-  }, []);
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => dispatch(updateCount())}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-        <button onClick={() => dispatch(setCache([{ id: Math.random().toString(), value: 'Cached Data' }]))}>
-          CACHE DATA
-        </button>
-        <br />
-        <button onClick={async () => await persistor.flush()}>
-          FLUSH DATA
-        </button>
-        <br />
-        <button onClick={async () => await persistor.purge(['user'])}>
-          RESET DATA
-        </button>
-      </div>
-    </>
-  )
+const App = () => {
+  const [bool, setBool] = React.useState(true);
+  return bool ? <RTK change={() => setBool(false)} /> : <Classic change={() => setBool(true)} />;
 }
 
 export default App

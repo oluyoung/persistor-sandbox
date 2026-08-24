@@ -1,22 +1,18 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+// import { Provider } from "react-redux";
+// import { persistor, createAppStore } from "./store-lite";
+// import { PersistGate } from "./lib/persist-lite/react/PersistGate.tsx";
+// import { persistor, store } from "./store-classic";
 import App from "./App.tsx";
-import { Provider } from "react-redux";
-// import { persister, createAppStore } from "./lib/store";
-import { persistor, createAppStore } from "./store-lite";
-import { PersistGate } from "./lib/persist-lite/react/PersistGate.tsx";
 
 async function bootstrap() {
-  const store = createAppStore();
+  // const store = createAppStore();
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>
-      <Provider store={store}>
-        <PersistGate persistor={persistor} loading={<div>Redux Persist Loading...</div>}>
-          <App />
-        </PersistGate>
-      </Provider>
+      <App />
     </StrictMode>,
   );
 }
