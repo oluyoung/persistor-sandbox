@@ -5,10 +5,15 @@ import './App.css'
 import { useAppDispatch, useAppSelector } from './lib/store/hooks';
 import { fetchUser, updateCount } from './lib/store/user.slice';
 import { setCache } from './lib/store/cache.slice';
+import { usePersistor } from './lib/persist-lite/react';
 
 function App() {
   const dispatch = useAppDispatch();
   const count = useAppSelector((state) => state.user.count);
+  
+  const { persistor, isHydrated, status } = usePersistor();
+
+  console.log({ isHydrated, status });
 
   useEffect(() => {
     dispatch(fetchUser('id'));
@@ -34,6 +39,14 @@ function App() {
         </p>
         <button onClick={() => dispatch(setCache([{ id: Math.random().toString(), value: 'Cached Data' }]))}>
           CACHE DATA
+        </button>
+        <br />
+        <button onClick={async () => await persistor.flush()}>
+          FLUSH DATA
+        </button>
+        <br />
+        <button onClick={async () => await persistor.purge(['user'])}>
+          RESET DATA
         </button>
       </div>
     </>

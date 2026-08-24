@@ -2,7 +2,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import userReducer from './user.slice';
 import cacheReducer from './cache.slice';
-import { persistLite } from '../lib/persist-lite';
+import { devLogger, persistLite } from '../lib/persist-lite';
 import { createPersistorEnhancer } from '../lib/persist-lite/enhancer';
 
 const rootReducer = combineReducers({
@@ -16,11 +16,13 @@ export type RootState = ReturnType<typeof rootReducer>;
 export const persistor = persistLite<RootState>({
   key: 'lite-root',
   debounceMs: 300,
-  // plugins: [],
+  plugins: [devLogger()],
   whitelist: [{ key: 'user', whitelistKeys: ['me', 'count']}],
   // whitelist: ['user'],
   // blacklist: [{ key: 'cache', blacklistKeys: ['temp']}],
    // Only persist the user slice
+   version: 1,
+   ttl: 1 * 60 * 1000, // 1 minute
 });
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

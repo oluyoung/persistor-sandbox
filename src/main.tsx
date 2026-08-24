@@ -8,7 +8,6 @@ import { persistor, createAppStore } from "./store-lite";
 import { PersistGate } from "./lib/persist-lite/react/PersistGate.tsx";
 
 async function bootstrap() {
-  console.log({ persistor})
   const store = createAppStore();
 
   createRoot(document.getElementById("root")!).render(

@@ -1,9 +1,7 @@
 import type { Plugin } from '../types';
 
-export function devLoggerPlugin<TState extends Record<string, unknown>>(
-  enabled = process.env.NODE_ENV !== 'production'
-): Plugin<TState> {
-  if (!enabled) {
+export function devLogger<TState extends Record<string, unknown>>(): Plugin<TState> {
+  if (process.env.NODE_ENV === 'production') {
     return {};
   }
 

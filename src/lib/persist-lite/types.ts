@@ -19,6 +19,8 @@ export interface PersistOptions<TState extends Record<string, unknown>> {
   blacklist?: (string | SliceFilter)[];
   plugins?: Plugin<TState>[];
   debounceMs?: number;
+  version?: number; // defaults to 1; mismatch with stored _v clears storage
+  ttl?: number; // milliseconds
 }
 
 export interface Persistor<TState extends Record<string, unknown>> {
@@ -37,3 +39,9 @@ export interface SliceFilter {
 }
 
 export type SliceFilterInput = string | SliceFilter;
+
+export interface StorageEnvelope<TState> {
+  _v: number;
+  _ts: number;
+  _d: TState;
+}
