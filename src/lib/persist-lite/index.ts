@@ -6,4 +6,4 @@ export { createLocalStorage } from './storage/local';
 export { createSessionStorage } from './storage/session';
 export { devLogger } from './plugins/devLogger';
 export { withPersistRehydration } from './compat/withPersistRehydration';
-export type { Persistor, PersistOptions, StorageEngine, Plugin, SliceFilter, PersistorStatus } from './types';
+export type { Persistor, PersistOptions, StorageEngine, Plugin, PersistorStatus } from './types';

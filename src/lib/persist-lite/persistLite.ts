@@ -1,6 +1,6 @@
 import { PersistLite } from './persistor';
 import type { PersistOptions } from './types';
 
-export const persistLite = <TState extends Record<string, unknown>>(
+export const persistLite = <TState>(
   options: PersistOptions<TState>,
 ) => new PersistLite(options);

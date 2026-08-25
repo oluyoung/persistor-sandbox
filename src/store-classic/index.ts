@@ -2,7 +2,7 @@ import {
   applyMiddleware,
   combineReducers,
   compose,
-  createStore,
+  legacy_createStore as createStore,
   type StoreEnhancer,
 } from 'redux';
 import { thunk } from 'redux-thunk';
@@ -27,7 +27,7 @@ export type RootState =
 const persistor =
   persistLite<RootState>({
     key: 'classic-app',
-    // whitelist: ['user'],
+    whitelist: ['user'],
   });
 
 const persistedReducer = withPersistRehydration(rootReducer);

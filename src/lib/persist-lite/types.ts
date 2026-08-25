@@ -6,24 +6,33 @@ export interface StorageEngine {
   removeItem(key: string): Promise<void>;
 }
 
-export interface Plugin<TState extends Record<string, unknown>> {
+export interface Plugin<TState> {
   onLoad?: (state: TState) => TState | Promise<TState>;
   onSave?: (state: TState) => TState | Promise<TState>;
   afterLoad?: (state: TState) => TState | Promise<TState>;
 }
 
-export interface PersistOptions<TState extends Record<string, unknown>> {
+type PersistFilterOptions<TState> =
+  TState extends Record<string, unknown>
+    ? {
+        whitelist?: SliceFilterInput<TState>[];
+        blacklist?: SliceFilterInput<TState>[];
+      }
+    : {
+        whitelist?: never;
+        blacklist?: never;
+      };
+
+export type PersistOptions<TState> = {
   key: string;
   storage?: StorageEngine;
-  whitelist?: (string | SliceFilter)[];
-  blacklist?: (string | SliceFilter)[];
   plugins?: Plugin<TState>[];
   debounceMs?: number;
   version?: number; // defaults to 1; mismatch with stored _v clears storage
   ttl?: number; // milliseconds
-}
+} & PersistFilterOptions<TState>;
 
-export interface Persistor<TState extends Record<string, unknown>> {
+export interface Persistor<TState> {
   load: () => Promise<TState | null>;
   save: (state: TState) => Promise<void>;
   subscribe: (listener: () => void) => () => void;
@@ -32,13 +41,13 @@ export interface Persistor<TState extends Record<string, unknown>> {
   flush: () => Promise<void>;
 }
 
-export interface SliceFilter {
-  key: string;
+export interface SliceFilter<TState> {
+  key: keyof TState;
   whitelistKeys?: string[];
   blacklistKeys?: string[];
 }
 
-export type SliceFilterInput = string | SliceFilter;
+export type SliceFilterInput<TState> = string | SliceFilter<TState>;
 
 export interface StorageEnvelope<TState> {
   _v: number;

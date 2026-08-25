@@ -40,7 +40,7 @@ function filterSlice(
   return next;
 }
 
-export function filterRootState<TState extends Record<string, unknown>>(
+export function filterRootState<TState>(
   state = {} as TState,
   whitelist?: Map<string, SliceFilter>,
   blacklist?: Map<string, SliceFilter>

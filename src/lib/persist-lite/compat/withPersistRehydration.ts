@@ -1,4 +1,4 @@
-import type { AnyAction, Reducer } from "redux";
+import type { Reducer, UnknownAction } from "redux";
 import {
   REHYDRATE,
   PERSIST_PURGE,
@@ -11,15 +11,14 @@ export interface RehydrationOptions<TState> {
 }
 
 export function withPersistRehydration<TState>(
-  reducer: Reducer<TState, AnyAction>,
+  reducer: Reducer<TState, UnknownAction>,
   options: RehydrationOptions<TState> = {},
-): Reducer<TState, AnyAction> {
-  const { reconcile = mergeLevel1 } = options;
+): Reducer<TState, UnknownAction> {
+  const { reconcile = defaultReconciler } = options;
 
   return (state, action) => {
     if (action.type === REHYDRATE && action.payload) {
       const baseState = reducer(state, { type: PERSIST_BASE });
-
       return reconcile(baseState, action.payload);
     }
 
@@ -31,10 +30,18 @@ export function withPersistRehydration<TState>(
   };
 }
 
-function mergeLevel1<TState>(
+function defaultReconciler<TState>(
   currentState: TState,
   persistedState: Partial<TState>,
 ): TState {
+  if (!persistedState || typeof persistedState !== "object") {
+    return currentState;
+  }
+
+  if (!currentState || typeof currentState !== "object") {
+    return persistedState as TState;
+  }
+
   return {
     ...currentState,
     ...persistedState,

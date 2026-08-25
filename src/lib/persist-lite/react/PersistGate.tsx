@@ -2,13 +2,13 @@ import React, { useSyncExternalStore } from 'react';
 import type { Persistor } from '../types';
 import { PersistorContext } from './context';
 
-interface PersistGateProps<TState extends Record<string, unknown>> {
+interface PersistGateProps<TState> {
   persistor: Persistor<TState>;
   loading?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export function PersistGate<TState extends Record<string, unknown>>({ persistor, loading = null, children }: PersistGateProps<TState>) {
+export function PersistGate<TState>({ persistor, loading = null, children }: PersistGateProps<TState>) {
   const status = useSyncExternalStore(
     persistor.subscribe,
     () => persistor.status,

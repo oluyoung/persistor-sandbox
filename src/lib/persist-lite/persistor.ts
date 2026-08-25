@@ -10,11 +10,11 @@ import type { Plugin } from './types';
 import { filterRootState, normalizeFilters } from './utils';
 import { createStorageEngine } from './storage';
 
-export class PersistLite<TState extends Record<string, unknown>> {
+export class PersistLite<TState> {
   private readonly key: string;
   private readonly storage: StorageEngine;
-  private readonly whitelist: SliceFilterInput[];
-  private readonly blacklist: SliceFilterInput[];
+  private readonly whitelist: SliceFilterInput<TState>[];
+  private readonly blacklist: SliceFilterInput<TState>[];
   private readonly plugins: Plugin<TState>[];
   private readonly debounceMs: number;
   private readonly version: number;

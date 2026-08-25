@@ -1,7 +1,7 @@
 import type { Plugin } from '../types';
 
 // Note: Plugins are applied in order
-export const applyPluginsLoad = async <TState extends Record<string, unknown>>(state: TState | null, plugins: Plugin<TState>[]): Promise<TState | null> => {
+export const applyPluginsLoad = async <TState>(state: TState | null, plugins: Plugin<TState>[]): Promise<TState | null> => {
   if (state === null) return null;
 
   let result = state;
@@ -12,7 +12,7 @@ export const applyPluginsLoad = async <TState extends Record<string, unknown>>(s
   return result;
 }
 
-export const applyPluginsSave = async <TState extends Record<string, unknown>>(state: TState, plugins: Plugin<TState>[]): Promise<TState> => {
+export const applyPluginsSave = async <TState>(state: TState, plugins: Plugin<TState>[]): Promise<TState> => {
   let result = state;
   for (const plugin of plugins) {
     if (plugin.onSave) result = await plugin.onSave(result);

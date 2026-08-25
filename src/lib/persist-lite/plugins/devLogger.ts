@@ -1,6 +1,6 @@
 import type { Plugin } from '../types';
 
-export function devLogger<TState extends Record<string, unknown>>(): Plugin<TState> {
+export function devLogger<TState>(): Plugin<TState> {
   if (process.env.NODE_ENV === 'production') {
     return {};
   }
