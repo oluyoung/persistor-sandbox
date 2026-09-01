@@ -1,6 +1,6 @@
 import React, { useSyncExternalStore } from 'react';
 import type { Persistor } from '../types';
-import { PersistorContext } from './context';
+import { getPersistorContext } from './context';
 
 interface PersistGateProps<TState> {
   persistor: Persistor<TState>;
@@ -8,7 +8,9 @@ interface PersistGateProps<TState> {
   children: React.ReactNode;
 }
 
+
 export function PersistGate<TState>({ persistor, loading = null, children }: PersistGateProps<TState>) {
+  const PersistorContext = getPersistorContext<TState>();
   const status = useSyncExternalStore(
     persistor.subscribe,
     () => persistor.status,
@@ -18,9 +20,7 @@ export function PersistGate<TState>({ persistor, loading = null, children }: Per
   const isReady = status === 'loaded' || status === 'error';
 
   return (
-    <PersistorContext.Provider value={persistor as Persistor<Record<string, unknown>>}>
-      {/* No loading prop = non-blocking. Children render immediately,
-          components use usePersistor to handle their own stale state. */}
+    <PersistorContext.Provider value={persistor as Persistor<TState>}>
       {loading !== undefined && !isReady ? loading : children}
     </PersistorContext.Provider>
   );

@@ -4,17 +4,21 @@ import type {
   SliceFilterInput,
   StorageEngine,
   StorageEnvelope,
-} from './types';
-import { applyPluginsLoad, applyPluginsSave } from './plugins/apply';
-import type { Plugin } from './types';
-import { filterRootState, normalizeFilters } from './utils';
-import { createStorageEngine } from './storage';
+} from "./types";
+import { applyPluginsLoad, applyPluginsSave } from "./plugins/apply";
+import type { Plugin } from "./types";
+import {
+  filterRootState,
+  isFilterableRootState,
+  normalizeFilters,
+} from "./utils";
+import { createStorageEngine } from "./storage";
 
 export class PersistLite<TState> {
   private readonly key: string;
   private readonly storage: StorageEngine;
-  private readonly whitelist: SliceFilterInput<TState>[];
-  private readonly blacklist: SliceFilterInput<TState>[];
+  private readonly whitelist: readonly SliceFilterInput<TState>[];
+  private readonly blacklist: readonly SliceFilterInput<TState>[];
   private readonly plugins: Plugin<TState>[];
   private readonly debounceMs: number;
   private readonly version: number;
@@ -22,7 +26,7 @@ export class PersistLite<TState> {
 
   private _inFlight = false;
   private _isPurging = false;
-  private _lastQueuedState: TState | null = null;
+  private _lastQueuedState: TState | undefined = undefined;
   private _debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private _status: PersistorStatus = "idle";
   private _listeners = new Set<() => void>();
@@ -34,32 +38,32 @@ export class PersistLite<TState> {
 
     this.key = options.key;
     this.storage = options.storage || createStorageEngine();
-    this.whitelist = options.whitelist || [];
-    this.blacklist = options.blacklist || [];
+    this.whitelist = options.whitelist ?? [];
+    this.blacklist = options.blacklist ?? [];
     this.plugins = options.plugins || [];
     this.debounceMs = options.debounceMs || 300;
     this.version = options.version || 1;
     this.ttl = options.ttl;
   }
 
-  load = async () => {
+  load = async (): Promise<TState | undefined> => {
     this._setStatus("loading");
     try {
-      let state = null;
+      let state: TState | undefined = undefined;
       const raw = await this.storage.getItem(this.key);
-      if (raw) {
+      if (raw !== null) {
         const envelope = JSON.parse(raw) as StorageEnvelope<TState>;
 
         // Version mismatch → clear and start fresh
         if (envelope._v !== this.version) {
           await this.storage.removeItem(this.key);
-          return null;
+          return undefined;
         }
 
         // TTL expired → evict
         if (this.ttl !== undefined && Date.now() - envelope._ts > this.ttl) {
           await this.storage.removeItem(this.key);
-          return null;
+          return undefined;
         }
 
         this._firstTimestamp = envelope._ts;
@@ -67,15 +71,15 @@ export class PersistLite<TState> {
       }
 
       const loaded = await applyPluginsLoad<TState>(state, this.plugins);
-      return loaded as TState | null;
+      return loaded as TState | undefined;
     } catch (error) {
       console.error("Failed to load persisted state:", error);
       this._setStatus("error");
-      return null;
+      return undefined;
     }
-  }
+  };
 
-  save = async (state: TState) =>{
+  save = async (state: TState) => {
     this._lastQueuedState = state;
     if (!this._debounceTimer) {
       this._debounceTimer = setTimeout(() => {
@@ -83,7 +87,7 @@ export class PersistLite<TState> {
         this.flush();
       }, this.debounceMs);
     }
-  }
+  };
 
   purge = async (slices?: string[]) => {
     this._isPurging = true;
@@ -92,28 +96,47 @@ export class PersistLite<TState> {
       clearTimeout(this._debounceTimer);
       this._debounceTimer = null;
     }
-    
+
     try {
       if (!slices) {
         await this.storage?.removeItem(this.key);
-      } else {
-        const raw = await this.storage?.getItem(this.key);
-        if (!raw) return;
-        const envelope = JSON.parse(raw) as StorageEnvelope<Record<string, unknown>>;
-        const state = { ...envelope._d };
-        slices.forEach((s) => delete state[s]);
-
-        await this.storage?.setItem(this.key, JSON.stringify({
-          ...envelope,
-           _d: state,
-        }));
+        return;
       }
+
+      const raw = await this.storage?.getItem(this.key);
+      if (raw === null) return;
+
+      const envelope = JSON.parse(raw) as StorageEnvelope<TState>;
+
+      if (!isFilterableRootState(envelope._d)) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn(
+            "[persist-lite] Partial purge is only supported " +
+              "for object root states. Use purge() to clear " +
+              "a primitive or array root state.",
+          );
+        }
+        return;
+      }
+
+      const nextState = { ...envelope._d };
+      for (const slice of slices) {
+        delete nextState[slice];
+      }
+
+      await this.storage?.setItem(
+        this.key,
+        JSON.stringify({
+          ...envelope,
+          _d: nextState,
+        }),
+      );
     } finally {
-      this._lastQueuedState = null;
+      this._lastQueuedState = undefined;
       this._isPurging = false;
       if (!slices) this._firstTimestamp = null;
     }
-  }
+  };
 
   subscribe = (listener: () => void) => {
     this._listeners.add(listener);
@@ -124,18 +147,23 @@ export class PersistLite<TState> {
 
   setLoaded = () => {
     this._setStatus("loaded");
-  }
+  };
 
   get status() {
     return this._status;
   }
 
   flush = async () => {
-    if (!this._lastQueuedState || this._inFlight || this._isPurging) return;
+    if (
+      this._lastQueuedState === undefined ||
+      this._inFlight ||
+      this._isPurging
+    )
+      return;
     this._inFlight = true;
 
     const stateToPersist = this._lastQueuedState;
-    this._lastQueuedState = null;
+    this._lastQueuedState = undefined;
 
     try {
       let next = filterRootState<TState>(
@@ -158,9 +186,9 @@ export class PersistLite<TState> {
       console.error("Failed to persist state:", error);
     } finally {
       this._inFlight = false;
-      if (this._lastQueuedState) await this.flush();
+      if (this._lastQueuedState !== undefined) await this.flush();
     }
-  }
+  };
 
   private _setStatus = (status: PersistorStatus) => {
     this._status = status;

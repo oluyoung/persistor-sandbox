@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { rehydrate } from "../lib/persist-lite";
 
 interface UserState {
@@ -18,7 +18,7 @@ const initialState: UserState = {
 
 export const fetchUser = createAsyncThunk(
   `user/fetchUser`,
-  async (token: string | null, { getState, requestId }: any) => {
+  async (_: string | null, { getState, requestId }: any) => {
     const { loading, currentRequestId } =
       getState()?.user?.fetchRequest || {};
     if (loading !== "pending" || requestId !== currentRequestId) return getState().user.me;
@@ -34,7 +34,7 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setUser(state, action: PayloadAction<any>) {
+    setUser(state, action) {
       state.me = action.payload;
     },
     updateCount(state) {
@@ -74,8 +74,8 @@ const userSlice = createSlice({
           state.fetchRequest.currentRequestId = undefined;
         }
       }).addCase(rehydrate, (state, action) => {
-        const user = action.payload?.user as UserState | undefined;
-        return { ...state, ...user }; // merge, not replace
+        const { user } = (action.payload ?? {}) as { user?: UserState };
+        state = { ...state, ...(user || {}) }; // merge, not replace
       });
   },
 });

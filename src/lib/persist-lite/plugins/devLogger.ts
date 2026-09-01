@@ -1,4 +1,5 @@
 import type { Plugin } from '../types';
+import { isFilterableRootState } from '../utils';
 
 export function devLogger<TState>(): Plugin<TState> {
   if (process.env.NODE_ENV === 'production') {
@@ -15,7 +16,7 @@ export function devLogger<TState>(): Plugin<TState> {
     async onSave(state) {
       console.log(
         '[persist] save triggered',
-        Object.keys(state)
+        isFilterableRootState(state) ? Object.keys(state) : state
       );
       return state;
     },
@@ -24,7 +25,7 @@ export function devLogger<TState>(): Plugin<TState> {
       console.timeEnd('[persist] hydration');
       console.log(
         '[persist] hydrated slices',
-        Object.keys(state ?? {})
+        isFilterableRootState(state) ? Object.keys(state) : state
       );
       console.groupEnd();
       return state;

@@ -1,8 +1,8 @@
 import { useContext, useSyncExternalStore } from 'react';
-import { PersistorContext } from './context';
+import { getPersistorContext } from './context';
 
-export function usePersistor() {
-  const persistor = useContext(PersistorContext);
+export function usePersistor<TState = unknown>() {
+  const persistor = useContext(getPersistorContext<TState>());
   if (!persistor) {
     throw new Error('usePersistor must be called inside a <PersistGate>');
   }

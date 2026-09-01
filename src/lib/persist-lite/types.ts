@@ -12,6 +12,16 @@ export interface Plugin<TState> {
   afterLoad?: (state: TState) => TState | Promise<TState>;
 }
 
+export type StringKeyOf<T> =
+  Extract<keyof T, string>;
+
+export type NestedStringKeyOf<T> =
+  T extends readonly unknown[]
+    ? never
+    : T extends object
+      ? Extract<keyof T, string>
+      : never;
+
 type PersistFilterOptions<TState> =
   TState extends Record<string, unknown>
     ? {
@@ -33,7 +43,7 @@ export type PersistOptions<TState> = {
 } & PersistFilterOptions<TState>;
 
 export interface Persistor<TState> {
-  load: () => Promise<TState | null>;
+  load: () => Promise<TState | undefined>;
   save: (state: TState) => Promise<void>;
   subscribe: (listener: () => void) => () => void;
   purge: (slices?: string[]) => Promise<void>;
@@ -41,13 +51,29 @@ export interface Persistor<TState> {
   flush: () => Promise<void>;
 }
 
-export interface SliceFilter<TState> {
-  key: keyof TState;
-  whitelistKeys?: string[];
-  blacklistKeys?: string[];
-}
+// export interface SliceFilter<TState> {
+//   key: keyof TState;
+//   whitelistKeys?: string[];
+//   blacklistKeys?: string[];
+// }
 
-export type SliceFilterInput<TState> = string | SliceFilter<TState>;
+export type SliceFilter<TState> = {
+  [K in StringKeyOf<TState>]: {
+    key: K;
+    whitelistKeys?: readonly NestedStringKeyOf<
+      TState[K]
+    >[];
+    blacklistKeys?: readonly NestedStringKeyOf<
+      TState[K]
+    >[];
+  };
+}[StringKeyOf<TState>];
+
+// export type SliceFilterInput<TState> = string | SliceFilter<TState>;
+
+export type SliceFilterInput<TState> =
+  | StringKeyOf<TState>
+  | SliceFilter<TState>;
 
 export interface StorageEnvelope<TState> {
   _v: number;

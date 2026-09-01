@@ -1,10 +1,10 @@
 import type { Plugin } from '../types';
 
 // Note: Plugins are applied in order
-export const applyPluginsLoad = async <TState>(state: TState | null, plugins: Plugin<TState>[]): Promise<TState | null> => {
-  if (state === null) return null;
+export const applyPluginsLoad = async <TState>(state: TState | undefined, plugins: Plugin<TState>[]): Promise<TState | undefined> => {
+  if (state === undefined) return undefined;
 
-  let result = state;
+  let result: TState = state;
   for (const plugin of plugins) {
     if (plugin.onLoad) result = await plugin.onLoad(result);
     if (plugin.afterLoad) result = await plugin.afterLoad(result);

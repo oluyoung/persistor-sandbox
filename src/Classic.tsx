@@ -10,7 +10,6 @@ import { setCache } from './store-classic/cache';
 import { PersistGate, usePersistor } from './lib/persist-lite/react';
 
 function ClassicStore({ change }: { change: () => void }) {
-
   return (
     <Provider store={store}>
       <PersistGate persistor={persistorStore} loading={<div>Redux Persist Loading...</div>}>
